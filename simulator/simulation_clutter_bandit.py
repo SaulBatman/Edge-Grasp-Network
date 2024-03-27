@@ -36,7 +36,7 @@ class ClutterRemovalSim(object):
         self.gui = gui
         self.rng = np.random.RandomState(seed) if seed else np.random
         self.world = btsim.BtWorld(self.gui)
-        self.gripper = Gripper(self.world)
+        self.gripper = GripperBarrett(self.world)
         self.size = 6 * self.gripper.finger_depth
         intrinsic = CameraIntrinsic(640, 480, 540.0, 540.0, 320.0, 240.0)
         self.camera = self.world.add_camera(intrinsic, 0.1, 2.0)
@@ -637,3 +637,204 @@ class Gripper(object):
         #     return False
         # else:
         #     return True
+
+class GripperBarrett(object):
+    """Simulated Panda hand."""
+    def __init__(self, world):
+        self.world = world
+        self.urdf_path = Path("./data_robot/urdfs/barrett/bh282.urdf")
+
+        self.max_opening_width = 0.08
+        self.finger_depth = 0.05
+        #self.T_body_tcp = Transform(Rotation.identity(), [0.0, 0.0, 0.022])
+        self.T_body_tcp = Transform(Rotation.identity(), [0.0, 0.0, 0.0])
+        self.T_tcp_body = self.T_body_tcp.inverse()
+
+    def reset(self, T_world_tcp, opening_width=0.08):
+        T_world_body = T_world_tcp * self.T_tcp_body
+        self.body = self.world.load_urdf(self.urdf_path, T_world_body)
+        pybullet.changeDynamics(self.body.uid, 0, lateralFriction=0.75, spinningFriction=0.05)
+        pybullet.changeDynamics(self.body.uid, 1, lateralFriction=0.75, spinningFriction=0.05)
+        self.body.set_pose(T_world_body)
+        # sets the position of the COM, not URDF link
+        self.constraint = self.world.add_constraint(
+            self.body,
+            None,
+            None,
+            None,
+            pybullet.JOINT_FIXED,
+            [0.0, 0.0, 0.0],
+            Transform.identity(),
+            T_world_body,
+        )
+        self.update_tcp_constraint(T_world_tcp)
+        # constraint to keep fingers centered
+        self.world.add_constraint(
+            self.body,
+            self.body.links["panda_leftfinger"],
+            self.body,
+            self.body.links["panda_rightfinger"],
+            pybullet.JOINT_GEAR,
+            [1.0, 0.0, 0.0],
+            Transform.identity(),
+            Transform.identity(),
+        ).change(gearRatio=-1, erp=0.1, maxForce=30)
+
+        self.joint1 = self.body.joints["panda_finger_joint1"]
+        self.joint1.set_position(0.5 * opening_width, kinematics=True)
+        self.joint2 = self.body.joints["panda_finger_joint2"]
+        self.joint2.set_position(0.5 * opening_width, kinematics=True)
+
+    def update_tcp_constraint(self, T_world_tcp):
+        T_world_body = T_world_tcp * self.T_tcp_body
+        self.constraint.change(
+            jointChildPivot=T_world_body.translation,
+            jointChildFrameOrientation=T_world_body.rotation.as_quat(),
+            maxForce=300,
+        )
+
+    def set_tcp(self, T_world_tcp):
+        T_word_body = T_world_tcp * self.T_tcp_body
+        self.body.set_pose(T_word_body)
+        self.update_tcp_constraint(T_world_tcp)
+
+    def move_tcp_xyz(self, target, eef_step=0.002, vel=0.10, abort_on_contact=True):
+        T_world_body = self.body.get_pose()
+        T_world_tcp = T_world_body * self.T_body_tcp
+
+        diff = target.translation - T_world_tcp.translation
+        n_steps = int(np.linalg.norm(diff) / eef_step)
+        dist_step = diff / n_steps
+        dur_step = np.linalg.norm(dist_step) / vel
+
+        for _ in range(n_steps):
+            T_world_tcp.translation += dist_step
+            self.update_tcp_constraint(T_world_tcp)
+            for _ in range(int(dur_step / self.world.dt)):
+                self.world.step()
+            if abort_on_contact and self.detect_contact():
+                return
+
+    def detect_contact(self, threshold=5):
+        #time.sleep(1)
+        if self.world.get_contacts(self.body):
+            return True
+        else:
+            return False
+
+
+    def grasp_object_id(self):
+        contacts = self.world.get_contacts(self.body)
+        for contact in contacts:
+            # contact = contacts[0]
+            # get rid body
+            grased_id = contact.bodyB
+            if grased_id.uid!=self.body.uid:
+                return grased_id.uid
+
+    def move(self, width):
+        self.joint1.set_position(0.5 * width)
+        self.joint2.set_position(0.5 * width)
+        for _ in range(int(0.5 / self.world.dt)):
+            self.world.step()
+
+    def read(self):
+        width = self.joint1.get_position() + self.joint2.get_position()
+        return width
+
+    def move_tcp_pose(self, target, eef_step1=0.002, vel1=0.10, abs=False):
+        T_world_body = self.body.get_pose()
+        T_world_tcp = T_world_body * self.T_body_tcp
+        pos_diff = target.translation - T_world_tcp.translation
+        n_steps = max(int(np.linalg.norm(pos_diff) / eef_step1),10)
+        dist_step = pos_diff / n_steps
+        dur_step = np.linalg.norm(dist_step) / vel1
+        key_rots = np.stack((T_world_body.rotation.as_quat(),target.rotation.as_quat()),axis=0)
+        key_rots = Rotation.from_quat(key_rots)
+        slerp = Slerp([0.0,1.0],key_rots)
+        times = np.linspace(0,1,n_steps)
+        orientations = slerp(times).as_quat()
+        for ii in range(n_steps):
+            T_world_tcp.translation += dist_step
+            T_world_tcp.rotation = Rotation.from_quat(orientations[ii])
+            if abs is True:
+                # todo by haojie add the relation transformation later
+                self.constraint.change(
+                    jointChildPivot=T_world_tcp.translation,
+                    jointChildFrameOrientation=T_world_tcp.rotation.as_quat(),
+                    maxForce=300,
+                )
+            else:
+                self.update_tcp_constraint(T_world_tcp)
+            for _ in range(int(dur_step / self.world.dt)):
+                self.world.step()
+
+    def move_gripper_top_down(self):
+        current_pose = self.body.get_pose()
+        pos = current_pose.translation + 0.1
+        flip = Rotation.from_euler('y', np.pi)
+        target_ori = Rotation.identity()*flip
+        self.move_tcp_pose(Transform(rotation=target_ori,translation=pos),abs=True)
+
+    def get_distance_from_hand(self,):
+        object_id = self.grasp_object_id()
+        pos, _ = pybullet.getBasePositionAndOrientation(object_id)
+        dist_from_hand = np.linalg.norm(np.array(pos) - np.array(self.body.get_pose().translation))
+        return dist_from_hand
+
+    def is_dropped(self,object_id,prev_dist):
+        pos,_ = pybullet.getBasePositionAndOrientation(object_id)
+        dist_from_hand = np.linalg.norm(np.array(pos) - np.array(self.body.get_pose().translation))
+        if np.isclose(prev_dist,dist_from_hand,atol=0.1):
+            return False
+        else:
+            return True
+
+    def shake_hand(self,pre_dist):
+        grasp_id = self.grasp_object_id()
+        current_pose = self.body.get_pose()
+        x,y,z = current_pose.translation[0],current_pose.translation[1],current_pose.translation[2]
+        default_position = [x, y, z]
+        shake_position = [x, y, z+0.05]
+        hand_orientation2 = pybullet.getQuaternionFromEuler([np.pi, 0, -np.pi/2])
+        shake_orientation1 = pybullet.getQuaternionFromEuler([np.pi, -np.pi / 12, -np.pi/2])
+        shake_orientation2 = pybullet.getQuaternionFromEuler([np.pi, np.pi / 12, -np.pi/2])
+        new_trans = current_pose.translation + np.array([0.,0.,0.05])
+        self.move_tcp_pose(target=Transform(rotation=Rotation.from_quat(hand_orientation2),translation=new_trans))
+        #check drop
+        if self.is_dropped(grasp_id,pre_dist):
+            return False
+        self.move_tcp_pose(target=Transform(rotation=Rotation.from_quat(hand_orientation2), translation=default_position))
+        #check drop
+        if self.is_dropped(grasp_id,pre_dist):
+            return False
+        self.move_tcp_pose(target=Transform(rotation=Rotation.from_quat(hand_orientation2), translation=shake_position))
+        # check drop
+        if self.is_dropped(grasp_id,pre_dist):
+            return False
+        self.move_tcp_pose(target=Transform(rotation=Rotation.from_quat(hand_orientation2), translation=default_position))
+        # check drop
+        if self.is_dropped(grasp_id,pre_dist):
+            return False
+        self.move_tcp_pose(target=Transform(rotation=Rotation.from_quat(shake_orientation1), translation=default_position))
+        # check drop
+        if self.is_dropped(grasp_id,pre_dist):
+            return False
+        self.move_tcp_pose(target=Transform(rotation=Rotation.from_quat(shake_orientation2), translation=default_position))
+        # check drop
+        if self.is_dropped(grasp_id,pre_dist):
+            return False
+        else:
+            return True
+        # self.move_tcp_pose(target=Transform(rotation=Rotation.from_quat(shake_orientation1), translation=default_position))
+        # # check drop
+        # if self.is_dropped(grasp_id,pre_dist):
+        #     return False
+        # self.move_tcp_pose(target=Transform(rotation=Rotation.from_quat(shake_orientation2), translation=default_position))
+        # # check drop
+        # if self.is_dropped(grasp_id,pre_dist):
+        #     return False
+        # else:
+        #     return True
+
+        
