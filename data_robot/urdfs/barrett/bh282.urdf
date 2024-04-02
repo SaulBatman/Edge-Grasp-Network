@@ -5,6 +5,11 @@
 <!-- =================================================================================== -->
 <robot name="bhand_">
   <link name="base_link">
+    <inertial>
+      <mass value="0.8"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -18,7 +23,13 @@
       </geometry>
     </collision>
   </link>
-  <link name="hand_base_link"/>
+  <link name="hand_base_link">
+    <inertial>
+      <mass value="0.8"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
   <joint name="hand_joint" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="base_link"/>
@@ -32,7 +43,7 @@
   <!-- HAND BASE_LINK (RED) -->
   <link name="bh_base_link">
     <inertial>
-      <mass value="1.0"/>
+      <mass value="0.8"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
