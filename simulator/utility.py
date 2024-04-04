@@ -285,7 +285,7 @@ def orthognal_grasps(geometry_mask, depth_projection, sample_normal, des_normals
     assert sum(geometry_mask)>0
     depth = depth_projection[geometry_mask]
     # finger depth
-    gripper_dis_from_source = (0.072-0.007 - depth).unsqueeze(dim=-1)
+    gripper_dis_from_source = (0.08-0.007 - depth).unsqueeze(dim=-1)
     z_axis = -sample_normal[geometry_mask]  # todo careful
     y_axis = des_normals[geometry_mask]
     x_axis = torch.cross(y_axis, z_axis,dim=1)

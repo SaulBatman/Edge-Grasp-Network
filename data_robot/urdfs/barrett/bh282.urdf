@@ -68,7 +68,7 @@
   <!-- finger 31 link -->
   <link name="bh_finger_31_link">
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.8"/>
       <origin rpy="0 0 0" xyz="-0.046 0 0"/>
       <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
     </inertial>
@@ -97,7 +97,7 @@
   <!-- finger 32 link -->
   <link name="bh_finger_32_link">
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.8"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
     </inertial>
@@ -137,7 +137,7 @@
   <!-- finger 33 link -->
   <link name="bh_finger_33_link">
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.8"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
     </inertial>
@@ -178,7 +178,7 @@
   <!-- finger 11 link -->
   <link name="bh_finger_11_link">
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.8"/>
       <origin rpy="0 0 0" xyz="-0.046 0 0"/>
       <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
     </inertial>
@@ -217,7 +217,7 @@
   <!-- finger 12 link -->
   <link name="bh_finger_12_link">
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.8"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
     </inertial>
@@ -257,7 +257,7 @@
   <!-- finger 13 link -->
   <link name="bh_finger_13_link">
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.8"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
     </inertial>
@@ -298,7 +298,7 @@
   <!-- finger 21 link -->
   <link name="bh_finger_21_link">
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.8"/>
       <origin rpy="0 0 0" xyz="-0.046 0 0"/>
       <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
     </inertial>
@@ -337,7 +337,7 @@
   <!-- finger 12 link -->
   <link name="bh_finger_22_link">
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.8"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
     </inertial>
@@ -377,7 +377,7 @@
   <!-- finger 23 link -->
   <link name="bh_finger_23_link">
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.8"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
     </inertial>

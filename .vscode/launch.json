@@ -12,12 +12,20 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Packed data generation",
+            "name": "Packed generation vis",
             "type": "debugpy",
             "request": "launch",
             "program": "clutter_grasp_data_generator.py",
             "console": "integratedTerminal",
             "args": ["--scene=packed", "--object-set=packed/train", "--sample_number=32", "--sim-gui"]
+        },
+        {
+            "name": "Packed generation no vis",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "clutter_grasp_data_generator.py",
+            "console": "integratedTerminal",
+            "args": ["--scene=packed", "--object-set=packed/train", "--sample_number=32"]
         },
         {
             "name": "test barett hand",
