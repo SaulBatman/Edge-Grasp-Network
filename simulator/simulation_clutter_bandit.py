@@ -219,7 +219,7 @@ class ClutterRemovalSim(object):
             pose = Transform(rotation, np.r_[x, y, z])
             scale = self.rng.uniform(0.7, 0.8)
             body = self.world.load_urdf(urdf, pose, scale=self.global_scaling * scale)
-            pybullet.changeDynamics(body.uid, 1, lateralFriction=0.75, spinningFriction=0.05, mass=2.)
+            pybullet.changeDynamics(body.uid, 1, lateralFriction=0.75, spinningFriction=0.05)
             lower, upper = self.world.p.getAABB(body.uid)
             z = table_height + 0.5 * (upper[2] - lower[2]) + 0.002
 
@@ -471,16 +471,16 @@ class Gripper(object):
         )
         self.update_tcp_constraint(T_world_tcp)
         # constraint to keep fingers centered
-        # self.world.add_constraint(
-        #     self.body,
-        #     self.body.links["panda_leftfinger"],
-        #     self.body,
-        #     self.body.links["panda_rightfinger"],
-        #     pybullet.JOINT_GEAR,
-        #     [1.0, 0.0, 0.0],
-        #     Transform.identity(),
-        #     Transform.identity(),
-        # ).change(gearRatio=-1, erp=0.1, maxForce=30)
+        self.world.add_constraint(
+            self.body,
+            self.body.links["panda_leftfinger"],
+            self.body,
+            self.body.links["panda_rightfinger"],
+            pybullet.JOINT_GEAR,
+            [1.0, 0.0, 0.0],
+            Transform.identity(),
+            Transform.identity(),
+        ).change(gearRatio=-1, erp=0.1, maxForce=30)
 
         self.joint1 = self.body.joints["panda_finger_joint1"]
         self.joint1.set_position(0.5 * opening_width, kinematics=True)
@@ -653,9 +653,9 @@ class GripperBarrett(object):
 
     def reset(self, T_world_tcp, opening_width=0.08):
         T_world_body = T_world_tcp * self.T_tcp_body
-        self.body = self.world.load_urdf(self.urdf_path, T_world_body, scale=0.5)
+        self.body = self.world.load_urdf(self.urdf_path, T_world_body, scale=0.7)
         for joint in range(10):
-            pybullet.changeDynamics(self.body.uid, joint, lateralFriction=3., spinningFriction=1.)
+            pybullet.changeDynamics(self.body.uid, joint, lateralFriction=1.2, spinningFriction=0.3)
         # pybullet.changeDynamics(self.body.uid, 1, lateralFriction=0.75, spinningFriction=0.05)
         self.body.set_pose(T_world_body)
         # sets the position of the COM, not URDF link
@@ -681,7 +681,28 @@ class GripperBarrett(object):
         #     Transform.identity(),
         #     Transform.identity(),
         # ).change(gearRatio=-1, erp=0.1, maxForce=30)
-
+        # self.world.add_constraint(
+        #     self.body,
+        #     self.body.links["bh_base_link"],
+        #     self.body,
+        #     self.body.links["bh_finger_11_link"],
+        #     pybullet.JOINT_FIXED,
+        #     [0.0, 0.0, 0.0],
+        #     Transform.identity(),
+        #     Transform.identity(),
+        # )
+        # self.world.add_constraint(
+        #     self.body,
+        #     self.body.links["bh_base_link"],
+        #     self.body,
+        #     self.body.links["bh_finger_21_link"],
+        #     pybullet.JOINT_FIXED,
+        #     [0.0, 0.0, 0.0],
+        #     Transform.identity(),
+        #     Transform.identity(),
+        # )
+       
+        
         
         joint = 0
         num = pybullet.getNumJoints(self.body.uid)
@@ -704,7 +725,7 @@ class GripperBarrett(object):
         self.constraint.change(
             jointChildPivot=T_world_body.translation,
             jointChildFrameOrientation=T_world_body.rotation.as_quat(),
-            maxForce=300,
+            maxForce=600,
         )
 
     def set_tcp(self, T_world_tcp):
@@ -750,14 +771,14 @@ class GripperBarrett(object):
         # close gripper
         grip_joints = [3, 6, 9] 
         t_vel = .03
-        maxForce = 150  # max force allowed
+        maxForce = 500  # max force allowed
         # for joint in grip_joints:
         #     pybullet.setJointMotorControl2(bodyUniqueId=self.body.uid, jointIndex=joint, controlMode=pybullet.VELOCITY_CONTROL,
         #                             targetVelocity=t_vel, force=maxForce)
         # pybullet.resetJointState(bodyUniqueId=self.body.uid, jointIndex=joint, targetValue=1.0)
 
-        # for joint in [3,6,9,4,7,10]:
-        #     pybullet.setJointMotorControl2(self.body.uid, joint, pybullet.POSITION_CONTROL, force=0)
+        # for joint in grip_joints:
+        #     pybullet.setJointMotorControl2(self.body.uid, joint, pybullet.POSITION_CONTROL, force=maxForce)
         # max_close_width_roots = 2. / 2
         # self.joint3.set_position(max_close_width_roots)
         # self.joint6.set_position(max_close_width_roots)
@@ -767,8 +788,8 @@ class GripperBarrett(object):
         # self.joint7.set_position(max_close_width_tops)
         # self.joint10.set_position(max_close_width_tops)
         
-        # for _ in range(int(0.5 / self.world.dt)):
-        #     self.world.step()
+        for _ in range(int(1. / self.world.dt)):
+            self.world.step()
 
         finish_time = time.time() + 3.0
         while time.time() < finish_time:
@@ -801,7 +822,7 @@ class GripperBarrett(object):
                 self.constraint.change(
                     jointChildPivot=T_world_tcp.translation,
                     jointChildFrameOrientation=T_world_tcp.rotation.as_quat(),
-                    maxForce=300,
+                    maxForce=600,
                 )
             else:
                 self.update_tcp_constraint(T_world_tcp)

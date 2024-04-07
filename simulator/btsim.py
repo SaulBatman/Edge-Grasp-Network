@@ -124,7 +124,7 @@ class Body(object):
         #print('dynamics')
         #print(physics_client.getDynamicsInfo(body_uid,-1))
         if not table:
-            physics_client.changeDynamics(body_uid, -1, mass = 0.5, lateralFriction=1.)
+            physics_client.changeDynamics(body_uid, -1, mass = 0.5, lateralFriction=1.5)
         return cls(physics_client, body_uid)
 
     @classmethod
@@ -168,7 +168,7 @@ class Body(object):
             else:
                 break
 
-        pb.changeDynamics(object_id, -1, lateralFriction=0.75, spinningFriction=0.001, rollingFriction=0.001,linearDamping=0.0)
+        pb.changeDynamics(object_id, -1, lateralFriction=1.5, spinningFriction=0.001, rollingFriction=0.001,linearDamping=0.0)
         return cls(pb, object_id)
 
     def get_pose(self):

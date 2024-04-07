@@ -62,7 +62,8 @@ def main(args):
         total_objects = 0
         no_candidate_object = 0
         for scene_num in range(NUMBER_SCENE):
-            object_count = np.random.poisson(OBJECT_COUNT_LAMBDA) + 1
+            # object_count = np.random.poisson(OBJECT_COUNT_LAMBDA) + 1
+            object_count = 1
             sim.reset(object_count)
             sim.save_state()
             # render synthetic depth images
