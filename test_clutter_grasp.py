@@ -8,7 +8,7 @@ from simulator.grasp import Grasp, Label
 from simulator.simulation_clutter_bandit import ClutterRemovalSim
 from simulator.transform import Rotation, Transform
 from simulator.io_smi import *
-from simulator.utility import FarthestSamplerTorch, get_gripper_points_mask, orthognal_grasps, FarthestSampler
+from simulator.utility import FarthestSamplerTorch, get_gripper_points_mask, orthogonal_grasps, FarthestSampler
 #from utility import bandit_grasp
 import warnings
 import torch
@@ -201,7 +201,7 @@ def main(args):
                     skip_time+=1
                     continue
                 # draw_grasps2(geometry_mask, depth_proj, valid_edge_approach, des_normals, sample_pos, pos, sample, des=None, scores=None)
-                pose_candidates = orthognal_grasps(geometry_mask, depth_proj, valid_edge_approach, des_normals,
+                pose_candidates = orthogonal_grasps(geometry_mask, depth_proj, valid_edge_approach, des_normals,
                                                    sample_pos)
                 table_grasp_mask = get_gripper_points_mask(pose_candidates,threshold=0.054)
                 # print('no collision with table candidates all', table_grasp_mask.sum())
@@ -242,7 +242,7 @@ def main(args):
 
                     grasp_mask = torch.ones(len(depth_projection)) > 2.
                     grasp_mask[max_indice] = True
-                    trans_matrix = orthognal_grasps(grasp_mask.to(des_normals.device), depth_projection, approaches,
+                    trans_matrix = orthogonal_grasps(grasp_mask.to(des_normals.device), depth_projection, approaches,
                                                     des_normals, sample_pos)
                     trans_matrix = trans_matrix.cpu().numpy()
                     if args.point_sample:

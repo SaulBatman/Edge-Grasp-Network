@@ -123,7 +123,7 @@
     <origin rpy="1.5708 -8.8281E-17 0" xyz="-0.05 0 0.0339"/>
     <axis xyz="0 0 -1"/>
     <limit effort="30.0" lower="0.0" upper="2.44" velocity="0.2"/>
-    <dynamics damping="100.0" friction="1.0"/>
+    <dynamics damping="100.0" friction="1.5"/>
   </joint>
   <transmission name="bh_j32_transmission">
     <type>transmission_interface/SimpleTransmission</type>
@@ -163,7 +163,7 @@
     <origin rpy="0 0 0" xyz="-0.069936 0.003 0"/>
     <axis xyz="0 0 -1"/>
     <limit effort="30.0" lower="0.0" upper="0.84" velocity="0.2"/>
-    <dynamics damping="100.0" friction="1.0"/>
+    <dynamics damping="100.0" friction="1.5"/>
   </joint>
   <transmission name="bh_j33_transmission">
     <type>transmission_interface/SimpleTransmission</type>
@@ -203,7 +203,7 @@
     <origin rpy="0 0 1.5708" xyz="-0.025 0 0.0252"/>
     <axis xyz="0 0 -1"/>
     <limit effort="30.0" lower="0" upper="3.1416" velocity="0.2"/>
-    <dynamics damping="100.0" friction="1.0"/>
+    <dynamics damping="100.0" friction="1.5"/>
   </joint>
   <transmission name="bh_j11_transmission">
     <type>transmission_interface/SimpleTransmission</type>
@@ -243,7 +243,7 @@
     <origin rpy="1.5708 0 0" xyz="-0.05 0 0.0339"/>
     <axis xyz="0 0 -1"/>
     <limit effort="30.0" lower="0.0" upper="2.44" velocity="0.2"/>
-    <dynamics damping="100.0" friction="1.0"/>
+    <dynamics damping="100.0" friction="1.5"/>
   </joint>
   <transmission name="bh_j12_transmission">
     <type>transmission_interface/SimpleTransmission</type>
@@ -283,7 +283,7 @@
     <origin rpy="0 0 0" xyz="-0.069936 0.003 0"/>
     <axis xyz="0 0 -1"/>
     <limit effort="30.0" lower="0.0" upper="0.84" velocity="0.2"/>
-    <dynamics damping="100.0" friction="1.0"/>
+    <dynamics damping="100.0" friction="1.5"/>
   </joint>
   <transmission name="bh_j13_transmission">
     <type>transmission_interface/SimpleTransmission</type>
@@ -323,7 +323,7 @@
     <origin rpy="0 0 1.5708" xyz="0.025 0 0.0252"/>
     <axis xyz="0 0 1"/>
     <limit effort="30.0" lower="0" upper="3.1416" velocity="0.2"/>
-    <dynamics damping="100.0" friction="1.0"/>
+    <dynamics damping="100.0" friction="1.5"/>
   </joint>
   <transmission name="bh_j21_transmission">
     <type>transmission_interface/SimpleTransmission</type>
@@ -363,7 +363,7 @@
     <origin rpy="1.5708 -8.8281E-17 0" xyz="-0.05 0 0.0339"/>
     <axis xyz="0 0 -1"/>
     <limit effort="30.0" lower="0.0" upper="2.44" velocity="0.2"/>
-    <dynamics damping="100.0" friction="1.0"/>
+    <dynamics damping="100.0" friction="1.5"/>
   </joint>
   <transmission name="bh_j22_transmission">
     <type>transmission_interface/SimpleTransmission</type>
@@ -403,7 +403,7 @@
     <origin rpy="0 0 0" xyz="-0.069936 0.003 0"/>
     <axis xyz="0 0 -1"/>
     <limit effort="30.0" lower="0.0" upper="0.84" velocity="0.2"/>
-    <dynamics damping="100.0" friction="1.0"/>
+    <dynamics damping="100.0" friction="1.5"/>
   </joint>
   <transmission name="bh_j23_transmission">
     <type>transmission_interface/SimpleTransmission</type>

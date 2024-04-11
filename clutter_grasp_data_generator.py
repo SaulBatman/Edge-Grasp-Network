@@ -8,7 +8,7 @@ from simulator.grasp import Grasp, Label
 from simulator.simulation_clutter_bandit import ClutterRemovalSim
 # from simulator.transform import Rotation, Transform
 from simulator.io_smi import *
-from simulator.utility import FarthestSampler, vis_samples_2, orthognal_grasps
+from simulator.utility import FarthestSampler, vis_samples_2, orthogonal_grasps
 import warnings
 import torch
 from torch_geometric.nn import radius
@@ -53,7 +53,7 @@ def main(args):
         # cudnn.deterministic = True
         recoder_level1 = []
         success_grasp_totoal = 0 # of successful grasp
-        orthognal_grasp = 0 # of total grasp
+        orthogonal_grasp = 0 # of total grasp
         pre = 0 #grasp collision when approach the target pose
         after = 0 #object slide
         grasp_hit = 0 # collision during grasp?  a little weired
@@ -211,7 +211,7 @@ def main(args):
                         geometry_mask = torch.ones(len(depth_projection)) > 2.
                         geometry_mask[edge_sample_index] = True
                     #print('grasps per scene', sum(geometry_mask))
-                    trans_matrix = orthognal_grasps(geometry_mask, depth_projection, valid_edge_approach, des_normals,sample_pos)
+                    trans_matrix = orthogonal_grasps(geometry_mask, depth_projection, valid_edge_approach, des_normals, sample_pos)
                     # half_widthes = torch.abs(torch.sum(relative_pos[geometry_mask,:]*des_normals[geometry_mask,:],dim=1))+0.013
                     # widthes = (half_widthes*2.).clip(max=0.08)
                     # print(widthes)
@@ -226,7 +226,7 @@ def main(args):
                 translation_record.extend(translations)
                 label_record.extend(success_num)
                 success_grasp_totoal += sum(success_num)
-                orthognal_grasp += len(trans_matrix)
+                orthogonal_grasp += len(trans_matrix)
                 for idx,des in enumerate(des_list):
                     if des == 'pregrasp':
                         pre +=1
@@ -258,10 +258,10 @@ def main(args):
                   'Success Grasp {}, Total Grasp {}, '
                   'Pre Collision {}, Failed during Grasping {}, Drop {}, Success_Des {}, '
                   .format(success_object,no_candidate_object, total_objects,
-                          success_grasp_totoal,orthognal_grasp,
+                          success_grasp_totoal,orthogonal_grasp,
                           pre,grasp_hit,after,des_success_total,))
             # recoder_level1.append([success_object,no_candidate_object, total_objects,
-            #                        success_grasp_totoal,orthognal_grasp,pre,grasp_hit,after,des_success_total])
+            #                        success_grasp_totoal,orthogonal_grasp,pre,grasp_hit,after,des_success_total])
             # np.save('recoder_level1'+str(args.scene),np.asarray(recoder_level1))
         # recoder_level0.append(recoder_level1)
         # np.save('recoder_level0'+str(args.scene), np.asarray(recoder_level0))
@@ -373,12 +373,22 @@ def get_grasp_poses(geometry_mask, depth_projection, approaches, des_normals, sa
 
 def get_gripper_points(trans):
     gripper_points_sim = torch.tensor([[0, 0, -0.02, ],
-                                       [0.011, -0.09, 0.015, ],
-                                       [-0.011, -0.09, 0.015, ],
-                                       [0.011, 0.09, 0.015, ],
-                                       [-0.011, 0.09, 0.015, ],
-                                       [0.008, 0.09, 0.075, ],
-                                       [0.008, -0.09, 0.075, ]]).to(torch.float).to(trans.device)
+                                    #    [0.011, -0.09, 0.015, ],
+                                    #    [-0.011, -0.09, 0.015, ],
+                                    #    [0.011, 0.09, 0.015, ],
+                                    #    [-0.011, 0.09, 0.015, ],
+                                       [-0.015, 0, 0, ],
+                                       [0.015, 0, 0, ],
+                                       [-0.015, 0.15, 0.02, ],
+                                       [-0.015, -0.15, 0.02, ],
+                                       [0.015, 0.15, 0.02, ],
+                                       [0.015, -0.15, 0.05, ],
+                                       [-0.015, 0.15, 0.05, ],
+                                       [-0.015, -0.15, 0.05, ],
+                                       [0.015, 0.15, 0.05, ],
+                                       [0.015, -0.15, 0.05, ],
+                                       [0.015, 0, 0.11],
+                                       [-0.015, 0, 0.11]]).to(torch.float).to(trans.device)
 
     num_p = gripper_points_sim.size(0)
     gripper_points_sim = gripper_points_sim.unsqueeze(dim=0).repeat(len(trans), 1, 1)

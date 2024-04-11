@@ -271,7 +271,7 @@ def vis_samples_2(cloud, pos, neg):
     else:
         o3d.visualization.draw_geometries([inlier1_cloud, outlier_cloud],)
 
-def orthognal_grasps(geometry_mask, depth_projection, sample_normal, des_normals, sample_pos):
+def orthogonal_grasps(geometry_mask, depth_projection, sample_normal, des_normals, sample_pos):
 
     '''
     :param geometry_mask: [bool,bool,,]
@@ -281,19 +281,33 @@ def orthognal_grasps(geometry_mask, depth_projection, sample_normal, des_normals
     :param sample_pos:
     :return: mX4X4 matrices that used to execute grasp in simulation
     '''
-    # if these is no reasonable points do nothing
+    # if there is no reasonable points do nothing
     assert sum(geometry_mask)>0
     depth = depth_projection[geometry_mask]
     # finger depth
     # gripper_dis_from_source = (0.084-0.007 - depth).unsqueeze(dim=-1)
-    gripper_dis_from_source = (0.1-0.007 - depth).unsqueeze(dim=-1)
+    max_length = 0.4 # maximum length from the finger tip to the root while grasping, adjust later
+    gripper_dis_from_source = (0.1-0.007 - depth).unsqueeze(-1)
     z_axis = -sample_normal[geometry_mask]  # todo careful
+
     y_axis = des_normals[geometry_mask]
     x_axis = torch.cross(y_axis, z_axis,dim=1)
     x_axis = F.normalize(x_axis, p=2,dim=1)
     y_axis = torch.cross(z_axis, x_axis,dim=1)
     y_axis = F.normalize(y_axis, p=2, dim=1)
     gripper_position = gripper_dis_from_source.repeat(1, 3) * (-z_axis) + sample_pos[geometry_mask]
+
+    # max_length = 3
+    # a = True
+    # for i, pos in enumerate(gripper_position):
+    #     min_height = max_length * z_axis[i, 2]
+    #     if pos[2] < min_height and z_axis[i, 2] < 0:
+    #         if a:
+    #             print(i)
+    #             a = False
+    #         pos += (min_height - pos[2]) * (-z_axis[i])
+    # breakpoint()
+
     transform_matrix = torch.cat((x_axis.unsqueeze(dim=-1), y_axis.unsqueeze(dim=-1),
                                   z_axis.unsqueeze(dim=-1), gripper_position.unsqueeze(dim=-1)), dim=-1)
     homo_agument = torch.as_tensor([0., 0., 0., 1.]).reshape(1, 1, 4).repeat(len(z_axis), 1, 1).to(des_normals.device)
@@ -335,7 +349,7 @@ def bandit_grasp(depth_projection,sample_normal,des_normals,sample_pos):
     transform_matrix = torch.cat((transform_matrix, homo_agument), dim=1)
     return transform_matrix
 
-def orthognal_grasps_translate(geometry_mask,depth_projection,half_baseline,sample_normal,des_normals,sample_pos):
+def orthogonal_grasps_translate(geometry_mask,depth_projection,half_baseline,sample_normal,des_normals,sample_pos):
 
     '''
     :param geometry_mask: [bool,bool,,]
@@ -347,7 +361,6 @@ def orthognal_grasps_translate(geometry_mask,depth_projection,half_baseline,samp
     '''
     # if these is no reasonable points do nothing
     assert sum(geometry_mask)>0
-    print('grasps_translate')
     depth = depth_projection[geometry_mask]
     # translate
     half_baseline = half_baseline[geometry_mask]
