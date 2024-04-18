@@ -124,7 +124,7 @@ class Body(object):
         #print('dynamics')
         #print(physics_client.getDynamicsInfo(body_uid,-1))
         if not table:
-            physics_client.changeDynamics(body_uid, -1, mass = 0.5, lateralFriction=1.5)
+            physics_client.changeDynamics(body_uid, -1, mass = 1, lateralFriction=2)
         return cls(physics_client, body_uid)
 
     @classmethod

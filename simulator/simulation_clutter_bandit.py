@@ -655,7 +655,7 @@ class GripperBarrett(object):
         T_world_body = T_world_tcp * self.T_tcp_body
         self.body = self.world.load_urdf(self.urdf_path, T_world_body, scale=0.7)
         for joint in range(10):
-            pybullet.changeDynamics(self.body.uid, joint, lateralFriction=1.2, spinningFriction=0.3)
+            pybullet.changeDynamics(self.body.uid, joint, lateralFriction=1.5, spinningFriction=0.3)
         # pybullet.changeDynamics(self.body.uid, 1, lateralFriction=0.75, spinningFriction=0.05)
         self.body.set_pose(T_world_body)
         # sets the position of the COM, not URDF link
